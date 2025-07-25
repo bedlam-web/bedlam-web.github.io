@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BedLam - Minecraft服务器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Minecraftia&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1605807646983-377bc5a76493?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80') fixed;
+            background-size: cover;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: rgba(15, 30, 15, 0.85);
+            backdrop-filter: blur(5px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-family: 'Minecraftia', sans-serif;
+            font-size: 2.2rem;
+            color: #4CAF50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: #FFD700;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+        
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(76, 175, 80, 0.3);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #4CAF50;
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .auth-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+        }
+        
+        .login-btn {
+            background: transparent;
+            color: #fff;
+            border: 1px solid #4CAF50;
+        }
+        
+        .register-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .login-btn:hover {
+            background: rgba(76, 175, 80, 0.2);
+        }
+        
+        .register-btn:hover {
+            background: #3d8b40;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 英雄区域样式 */
+        .hero {
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            position: relative;
+        }
+        
+        .hero h1 {
+            font-size: 4.5rem;
+            font-family: 'Minecraftia', sans-serif;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            letter-spacing: 3px;
+            color: #FFD700;
+            animation: pulse 2s infinite;
+        }
+        
+        .hero p {
+            font-size: 1.8rem;
+            max-width: 800px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+        
+        .join-btn {
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 25px rgba(76, 175, 80, 0.5);
+        }
+        
+        .join-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.7);
+            background: linear-gradient(45deg, #3d8b40, #7CB342);
+        }
+        
+        .server-ip {
+            position: absolute;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+        }
+        
+        /* 内容区域样式 */
+        .content-section {
+            padding: 80px 10%;
+            background: rgba(10, 20, 10, 0.8);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: #FFD700;
+            font-family: 'Minecraftia', sans-serif;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background: #4CAF50;
+            margin: 15px auto;
+            border-radius: 2px;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+        
+        .feature-card {
+            background: rgba(30, 45, 30, 0.7);
+            border-radius: 10px;
+            padding: 30px;
+            flex: 1;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid #4CAF50;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .feature-card i {
+            font-size: 3rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 50px;
+        }
+        
+        .gallery-item {
+            height: 250px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+        
+        .gallery-item .caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        
+        /* 页脚样式 */
+        footer {
+            background: rgba(10, 15, 10, 0.95);
+            padding: 50px 10% 20px;
+            border-top: 2px solid #4CAF50;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .footer-column h3 {
+            color: #FFD700;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: #4CAF50;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 12px;
+        }
+        
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-column ul li a:hover {
+            color: #4CAF50;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background: #4CAF50;
+            color: white;
+            transform: translateY(-5px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: rgba(20, 30, 20, 0.95);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            position: relative;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 40px rgba(76, 175, 80, 0.3);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #ccc;
+            transition: color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: #4CAF50;
+        }
+        
+        .modal h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #FFD700;
+            font-size: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: rgba(30, 40, 30, 0.8);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:hover {
+            background: #3d8b40;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+        }
+        
+        .form-footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.7); }
+            50% { text-shadow: 0 0 30px rgba(255, 215, 0, 0.9); }
+            100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.7); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .features {
+                flex-direction: column;
+            }
+            
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 15px;
+            }
+            
+            .nav-links {
+                margin: 20px 0;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .auth-buttons {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .content-section {
+                padding: 50px 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-cube"></i>
+            <span>BedLam</span>
+        </div>
+        
+        <div class="nav-links">
+            <a href="#"><i class="fas fa-home"></i> 首页</a>
+            <a href="#"><i class="fas fa-info-circle"></i> 关于我们</a>
+            <a href="#"><i class="fas fa-gamepad"></i> 加入世界</a>
+            <a href="#"><i class="fas fa-comments"></i> 论坛</a>
+            <a href="#"><i class="fas fa-users"></i> 加入交流群</a>
+        </div>
+        
+        <div class="auth-buttons">
+            <button class="login-btn" onclick="openModal('login')"><i class="fas fa-sign-in-alt"></i> 登录</button>
+            <button class="register-btn" onclick="openModal('register')"><i class="fas fa-user-plus"></i> 注册</button>
+        </div>
+    </nav>
+    
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <h1>欢迎来到BedLam</h1>
+        <p>探索无限可能，体验最精彩的Minecraft服务器冒险</p>
+        <button class="join-btn">立即加入</button>
+        <div class="server-ip">
+            <i class="fas fa-server"></i> 服务器IP: mc.bedlam-server.com
+        </div>
+    </section>
+    
+    <!-- 内容区域 -->
+    <section class="content-section">
+        <h2 class="section-title">服务器特色</h2>
+        
+        <div class="features">
+            <div class="feature-card fade-in">
+                <i class="fas fa-dragon"></i>
+                <h3>史诗冒险</h3>
+                <p>探索精心设计的冒险地图，挑战强大的Boss，获取稀有装备和宝藏。</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <i class="fas fa-city"></i>
+                <h3>独特玩法</h3>
+                <p>体验独特的生存模式，包含经济系统、技能树和自定义物品等特色功能。</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <i class="fas fa-users"></i>
+                <h3>活跃社区</h3>
+                <p>加入我们友好的玩家社区，参加定期活动，结交志同道合的朋友。</p>
+            </div>
+        </div>
+        
+        <h2 class="section-title">服务器截图</h2>
+        
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1560969184-10fe8719e047?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="城堡建筑">
+                <div class="caption">史诗城堡</div>
+            </div>
+            
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1531315630201-bb15abeb1653?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="地下城">
+                <div class="caption">神秘地下城</div>
+            </div>
+            
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="现代建筑">
+                <div class="caption">现代都市</div>
+            </div>
+            
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1605812860427-4024433a70fd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="自然景观">
+                <div class="caption">自然奇观</div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 页脚 -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>关于BedLam</h3>
+                <p>BedLam是成立于2020年的高质量Minecraft服务器，致力于为玩家提供独特的游戏体验和友好的社区环境。</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h3>快速链接</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-arrow-right"></i> 服务器规则</a></li>
+                    <li><a href="#"><i class="fas fa-arrow-right"></i> 常见问题</a></li>
+                    <li><a href="#"><i class="fas fa-arrow-right"></i> 玩家指南</a></li>
+                    <li><a href="#"><i class="fas fa-arrow-right"></i> 捐赠支持</a></li>
+                    <li><a href="#"><i class="fas fa-arrow-right"></i> 联系我们</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h3>服务器信息</h3>
+                <ul>
+                    <li><i class="fas fa-server"></i> 版本: 1.19.2</li>
+                    <li><i class="fas fa-plug"></i> 状态: <span style="color: #4CAF50;">在线</span></li>
+                    <li><i class="fas fa-users"></i> 在线玩家: 84/100</li>
+                    <li><i class="fas fa-network-wired"></i> 延迟: 35ms</li>
+                    <li><i class="fas fa-globe"></i> 服务器位置: 香港</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2023 BedLam Minecraft服务器. 保留所有权利。 | 设计制作: BedLam开发团队
+        </div>
+    </footer>
+    
+    <!-- 登录模态框 -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('login')">&times;</span>
+            <h2><i class="fas fa-sign-in-alt"></i> 用户登录</h2>
+            
+            <form>
+                <div class="form-group">
+                    <label for="username">昵称</label>
+                    <input type="text" id="username" placeholder="请输入您的昵称" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入您的密码" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">登录</button>
+                
+                <div class="form-footer">
+                    <p>还没有账号? <a href="#" onclick="openModal('register'); closeModal('login')">立即注册</a></p>
+                    <p><a href="#">忘记密码?</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 注册模态框 -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('register')">&times;</span>
+            <h2><i class="fas fa-user-plus"></i> 用户注册</h2>
+            
+            <form>
+                <div class="form-group">
+                    <label for="regUsername">昵称</label>
+                    <input type="text" id="regUsername" placeholder="请输入您的昵称" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">密码</label>
+                    <input type="password" id="regPassword" placeholder="请设置您的密码" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword2">重复密码</label>
+                    <input type="password" id="regPassword2" placeholder="请再次输入密码" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" id="email" placeholder="请输入您的邮箱" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="captcha">验证码</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="captcha" placeholder="请输入验证码" style="flex: 1;" required>
+                        <button type="button" style="background: #555; color: white; border: none; border-radius: 5px; padding: 0 15px; cursor: pointer;">获取验证码</button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">注册</button>
+                
+                <div class="form-footer">
+                    <p>已有账号? <a href="#" onclick="openModal('login'); closeModal('register')">立即登录</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // 模态框控制函数
+        function openModal(modalId) {
+            document.getElementById(modalId + 'Modal').style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId + 'Modal').style.display = 'none';
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+        
+        // 滚动动画效果
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach(card => {
+                const cardTop = card.getBoundingClientRect().top;
+                if (cardTop < window.innerHeight - 100) {
+                    card.classList.add('fade-in');
+                }
+            });
+        });
+        
+        // 页面加载后触发滚动事件以初始化动画
+        window.onload = () => {
+            window.dispatchEvent(new Event('scroll'));
+        };
+    </script>
+</body>
+</html>
